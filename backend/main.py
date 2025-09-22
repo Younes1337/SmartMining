@@ -6,6 +6,7 @@ import io
 import pandas as pd
 from pathlib import Path
 import re
+import joblib
 
 from .db import get_db
 from . import models
@@ -35,10 +36,23 @@ def on_startup():
 
     Base.metadata.create_all(bind=engine)
 
+    # Load pretrained ML components from models/
+    global _POLY, _SCALER, _PCA, _KNN
+    try:
+        project_root = Path(__file__).resolve().parents[1]
+        models_dir = project_root / "models"
+        poly_path = models_dir / "poly_transform.pkl"
+        scaler_path = models_dir / "scaler.pkl"
+        pca_path = models_dir / "pca_transform.pkl"
+        knn_path = models_dir / "knn_model.pkl"
 
-@app.get("/health")
-def health():
-    return {"status": "ok"}
+        _POLY = joblib.load(poly_path) if poly_path.exists() else None
+        _SCALER = joblib.load(scaler_path) if scaler_path.exists() else None
+        _PCA = joblib.load(pca_path) if pca_path.exists() else None
+        _KNN = joblib.load(knn_path) if knn_path.exists() else None
+    except Exception:
+        _POLY = _SCALER = _PCA = _KNN = None
+
 
 
 @app.post("/ingest")
@@ -173,10 +187,26 @@ def get_data(db: Session = Depends(get_db)):
 
 @app.post("/predict", response_model=PredictResponse)
 def predict(payload: PredictRequest, db: Session = Depends(get_db)):
-    # Placeholder implementation; will be replaced after training the ML model
-    # For now, return a naive baseline (e.g., mean of available teneur) to keep the flow working
-    avg = db.query(models.Forage).with_entities(models.Forage.teneur).all()
-    if not avg:
-        raise HTTPException(status_code=503, detail="No data available to compute baseline prediction.")
-    mean_teneur = sum(v[0] for v in avg) / len(avg)
-    return PredictResponse(predicted_teneur=float(mean_teneur), model="baseline-mean")
+    # Ensure pretrained artifacts are loaded
+    if any(x is None for x in (_POLY, _SCALER, _PCA, _KNN)):
+        raise HTTPException(
+            status_code=503,
+            detail="Model pipeline not available. Ensure poly_transform.pkl, scaler.pkl, pca_transform.pkl, knn_model.pkl exist in models/.",
+        )
+
+    # Build DataFrame with expected columns order X, Y, Z
+    df = pd.DataFrame({
+        'X': [payload.x_coord],
+        'Y': [payload.y_coord],
+        'Z': [payload.z_coord],
+    })
+
+    try:
+        X_poly = _POLY.transform(df[['X', 'Y', 'Z']])
+        X_scaled = _SCALER.transform(X_poly)
+        X_pca = _PCA.transform(X_scaled)
+        y_pred = _KNN.predict(X_pca)[0]
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Prediction failed: {e}")
+
+    return PredictResponse(predicted_teneur=float(y_pred), model=type(_KNN).__name__)
