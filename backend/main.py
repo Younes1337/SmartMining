@@ -7,12 +7,17 @@ import pandas as pd
 from pathlib import Path
 import re
 import joblib
+import warnings
+from sklearn.exceptions import InconsistentVersionWarning
 
 from .db import get_db
 from . import models
 from .schemas import ForageOut, PredictRequest, PredictResponse
 
 app = FastAPI(title="Smart Mining Panel API")
+
+# Suppress sklearn version mismatch warnings shown when unpickling estimators
+#warnings.filterwarnings("ignore", category=InconsistentVersionWarning)
 
 # Enable CORS for local development (React default ports)
 app.add_middleware(
@@ -36,22 +41,41 @@ def on_startup():
 
     Base.metadata.create_all(bind=engine)
 
-    # Load pretrained ML components from models/
-    global _POLY, _SCALER, _PCA, _KNN
-    try:
-        project_root = Path(__file__).resolve().parents[1]
-        models_dir = project_root / "models"
-        poly_path = models_dir / "poly_transform.pkl"
-        scaler_path = models_dir / "scaler.pkl"
-        pca_path = models_dir / "pca_transform.pkl"
-        knn_path = models_dir / "knn_model.pkl"
+    # Load pretrained ML components from models/ with detailed diagnostics
+    global _POLY, _SCALER, _PCA, _KNN, _MODEL_STATUS
+    _MODEL_STATUS = {
+        "dir": None,
+        "artifacts": {
+            "poly_transform.pkl": {"exists": False, "loaded": False, "error": None},
+            "scaler.pkl": {"exists": False, "loaded": False, "error": None},
+            "pca_transform.pkl": {"exists": False, "loaded": False, "error": None},
+            "knn_model.pkl": {"exists": False, "loaded": False, "error": None},
+        },
+    }
 
-        _POLY = joblib.load(poly_path) if poly_path.exists() else None
-        _SCALER = joblib.load(scaler_path) if scaler_path.exists() else None
-        _PCA = joblib.load(pca_path) if pca_path.exists() else None
-        _KNN = joblib.load(knn_path) if knn_path.exists() else None
-    except Exception:
-        _POLY = _SCALER = _PCA = _KNN = None
+    _POLY = _SCALER = _PCA = _KNN = None
+    project_root = Path(__file__).resolve().parents[1]
+    models_dir = project_root / "models"
+    _MODEL_STATUS["dir"] = str(models_dir)
+
+    def _load(name: str):
+        path = models_dir / name
+        entry = _MODEL_STATUS["artifacts"][name]
+        entry["exists"] = path.exists()
+        if not entry["exists"]:
+            return None
+        try:
+            obj = joblib.load(path)
+            entry["loaded"] = True
+            return obj
+        except Exception as e:
+            entry["error"] = str(e)
+            return None
+
+    _POLY = _load("poly_transform.pkl")
+    _SCALER = _load("scaler.pkl")
+    _PCA = _load("pca_transform.pkl")
+    _KNN = _load("knn_model.pkl")
 
 
 
@@ -179,6 +203,12 @@ async def ingest_csv(
     }
 
 
+@app.get("/model/info")
+def model_info():
+    """Report model artifacts presence, load status, and any load errors."""
+    return _MODEL_STATUS
+
+
 @app.get("/data", response_model=List[ForageOut])
 def get_data(db: Session = Depends(get_db)):
     items = db.query(models.Forage).limit(1000).all()
@@ -188,10 +218,19 @@ def get_data(db: Session = Depends(get_db)):
 @app.post("/predict", response_model=PredictResponse)
 def predict(payload: PredictRequest, db: Session = Depends(get_db)):
     # Ensure pretrained artifacts are loaded
-    if any(x is None for x in (_POLY, _SCALER, _PCA, _KNN)):
+    missing = []
+    if _POLY is None:
+        missing.append("poly_transform.pkl")
+    if _SCALER is None:
+        missing.append("scaler.pkl")
+    if _PCA is None:
+        missing.append("pca_transform.pkl")
+    if _KNN is None:
+        missing.append("knn_model.pkl")
+    if missing:
         raise HTTPException(
             status_code=503,
-            detail="Model pipeline not available. Ensure poly_transform.pkl, scaler.pkl, pca_transform.pkl, knn_model.pkl exist in models/.",
+            detail=f"Model pipeline not available. Missing or failed to load: {missing}. See /model/info for details.",
         )
 
     # Build DataFrame with expected columns order X, Y, Z
