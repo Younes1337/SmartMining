@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Depends, HTTPException, Query
+from fastapi import FastAPI, Depends, HTTPException, Query, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from typing import List, Optional
@@ -82,6 +82,7 @@ def on_startup():
 @app.post("/ingest")
 async def ingest_csv(
     filename: Optional[str] = Query(None, description="CSV filename inside the data/ directory"),
+    file: Optional[UploadFile] = File(None, description="CSV file uploaded via multipart/form-data"),
     db: Session = Depends(get_db),
 ):
     """Ingest data into the forages table.
@@ -95,30 +96,39 @@ async def ingest_csv(
     df = None
     chosen_path: Optional[Path] = None
 
-    # Ingest strictly from data/ directory
-    project_root = Path(__file__).resolve().parents[1]  # repo root
-    data_dir = project_root / "data"
-    if not data_dir.exists() or not data_dir.is_dir():
-        raise HTTPException(status_code=400, detail=f"Data directory not found: {data_dir}")
-
-    if filename:
-        candidate = data_dir / filename
-        if not candidate.exists() or not candidate.is_file():
-            raise HTTPException(status_code=400, detail=f"File not found in data/: {filename}")
-        chosen_path = candidate
+    # If a file is uploaded via multipart, read it. Otherwise fall back to data/ directory selection
+    if file is not None:
+        try:
+            contents = await file.read()
+            # Support auto separator detection
+            df = pd.read_csv(io.BytesIO(contents), sep=None, engine="python")
+        except Exception as e:
+            raise HTTPException(status_code=400, detail=f"Failed to read uploaded CSV: {e}")
     else:
-        csvs = list(data_dir.glob("*.csv"))
-        if len(csvs) == 0:
-            raise HTTPException(status_code=400, detail="No CSV files found in data/ directory")
-        if len(csvs) > 1:
-            raise HTTPException(status_code=400, detail=f"Multiple CSVs found in data/. Specify one via filename. Available: {[p.name for p in csvs]}")
-        chosen_path = csvs[0]
+        # Ingest from data/ directory
+        project_root = Path(__file__).resolve().parents[1]  # repo root
+        data_dir = project_root / "data"
+        if not data_dir.exists() or not data_dir.is_dir():
+            raise HTTPException(status_code=400, detail=f"Data directory not found: {data_dir}")
 
-    try:
-        # Auto-detect separators like ',' or ';'
-        df = pd.read_csv(chosen_path, sep=None, engine="python")
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Failed to read CSV from data/: {e}")
+        if filename:
+            candidate = data_dir / filename
+            if not candidate.exists() or not candidate.is_file():
+                raise HTTPException(status_code=400, detail=f"File not found in data/: {filename}")
+            chosen_path = candidate
+        else:
+            csvs = list(data_dir.glob("*.csv"))
+            if len(csvs) == 0:
+                raise HTTPException(status_code=400, detail="No CSV files found in data/ directory")
+            if len(csvs) > 1:
+                raise HTTPException(status_code=400, detail=f"Multiple CSVs found in data/. Specify one via filename. Available: {[p.name for p in csvs]}")
+            chosen_path = csvs[0]
+
+        try:
+            # Auto-detect separators like ',' or ';'
+            df = pd.read_csv(chosen_path, sep=None, engine="python")
+        except Exception as e:
+            raise HTTPException(status_code=400, detail=f"Failed to read CSV from data/: {e}")
 
     # Normalize and map columns to expected names
     def _normalize(name: str) -> str:
@@ -196,7 +206,7 @@ async def ingest_csv(
         raise HTTPException(status_code=500, detail=f"Database insert failed: {e}")
 
     return {
-        "filename": (chosen_path.name if chosen_path is not None else None),
+        "filename": (chosen_path.name if chosen_path is not None else getattr(file, "filename", None)),
         "rows_received": int(before_rows),
         "rows_inserted": int(inserted),
         "rows_dropped": int(dropped_rows),
