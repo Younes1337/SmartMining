@@ -1,1 +1,1 @@
-SELECT * FROM forages;
+DELETE FROM forages;
