@@ -1,5 +1,5 @@
 from typing import Optional
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel
 
 
 class ForageOut(BaseModel):
@@ -9,7 +9,8 @@ class ForageOut(BaseModel):
     z_coord: float
     teneur: float
 
-    model_config = ConfigDict(from_attributes=True)
+    class Config:
+        orm_mode = True
 
 
 class PredictRequest(BaseModel):

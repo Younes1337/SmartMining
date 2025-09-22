@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import './MapView.css';
 import { fetchData, predict, ingestFile } from './api';
+import logo from './logo.svg';
 
 export default function MapView() {
   const mapRef = useRef(null);
@@ -116,8 +117,13 @@ export default function MapView() {
     <div className="page">
       <div className="sidebar">
         <div className="header">
-          <div className="title">Smart Mining Panel</div>
-          <div className="subtitle">Visualize forages and predict teneur from coordinates.</div>
+          <div className="brand">
+            <img src={logo} className="brand-logo" alt="Smart Mining Panel logo" />
+            <div className="brand-text">
+              <div className="title">Smart Mining Panel</div>
+              <div className="subtitle">Visualize forages and predict teneur from coordinates.</div>
+            </div>
+          </div>
         </div>
         <form onSubmit={onSubmit} className="form card">
           <label>

@@ -34,6 +34,19 @@ html, body, #root { height: 100%; }
 }
 
 .header { margin-bottom: 12px; }
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.brand-logo {
+  width: 42px;
+  height: 42px;
+  border-radius: 8px;
+  /* no shadow, aligned beside the title */
+  transform: translateY(-2px);
+}
+.brand-text { display: flex; flex-direction: column; }
 .title { font-size: 20px; font-weight: 800; letter-spacing: -0.02em; }
 .subtitle { margin-top: 4px; color: var(--muted); font-size: 13px; }
 
