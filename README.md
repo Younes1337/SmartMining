@@ -57,6 +57,29 @@ smart-mining-panel8/
 └─ README.md
 ```
 
+## File Overview
+
+| Path | Role |
+| --- | --- |
+| `backend/main.py` | FastAPI app with endpoints: `/ingest`, `/data`, `/predict`, `/model/info`; starts up DB and loads ML artifacts. |
+| `backend/db.py` | SQLAlchemy engine/session factory; reads `DATABASE_URL` from `.env`. |
+| `backend/models.py` | ORM models (e.g., `Forage`) and SQLAlchemy metadata. |
+| `backend/schemas.py` | Pydantic request/response schemas (`ForageIn`, `ForageOut`, etc.). |
+| `backend/requirements.txt` | Python dependencies for the backend. |
+| `frontend/src/MapView.jsx` | Main React map UI with Leaflet, controls, and interactions. |
+| `frontend/src/MapView.css` | Styles for the map and control panel components. |
+| `frontend/src/api.js` | API client for calling FastAPI endpoints (ingest, data, predict). |
+| `frontend/src/App.js` | App shell that mounts the `MapView` component. |
+| `frontend/src/index.js` | React entry point; renders the app to the DOM. |
+| `frontend/src/index.css` | Global CSS for the React app. |
+| `models/poly_transform.pkl` | Polynomial feature transformer used in the ML pipeline. |
+| `models/scaler.pkl` | Feature scaler fitted to training data. |
+| `models/pca_transform.pkl` | PCA transformer for dimensionality reduction. |
+| `models/knn_model.pkl` | KNN regressor used for grade prediction. |
+| `data/` | Place CSVs here for ingestion (local file mode). |
+| `.env` | Environment variables file (e.g., `DATABASE_URL`). |
+| `README.md` | Project overview and instructions. |
+
 ## Features
 
 - Fast ingestion pipeline with column auto-mapping (e.g., `x`/`x_coord`, `teneur`/`grade`)
