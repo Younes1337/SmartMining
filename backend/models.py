@@ -2,11 +2,11 @@ from sqlalchemy import Column, Integer, Float
 from .db import Base
 
 
-class Sample(Base):
-    __tablename__ = "samples"
+class Forage(Base):
+    __tablename__ = "forages"
 
     id = Column(Integer, primary_key=True, index=True)
-    x = Column(Float, nullable=False)
-    y = Column(Float, nullable=False)
-    z = Column(Float, nullable=False)
-    grade_percent = Column(Float, nullable=False)
+    x_coord = Column(Float, nullable=False)
+    y_coord = Column(Float, nullable=False)
+    z_coord = Column(Float, nullable=False)
+    teneur = Column(Float, nullable=False)
