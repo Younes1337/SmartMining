@@ -77,7 +77,6 @@ smart-mining-panel8/
 | `models/pca_transform.pkl` | PCA transformer for dimensionality reduction. |
 | `models/knn_model.pkl` | KNN regressor used for grade prediction. |
 | `data/` | Place CSVs here for ingestion (local file mode). |
-| `.env` | Environment variables file (e.g., `DATABASE_URL`). |
 | `README.md` | Project overview and instructions. |
 
 ## Features
