@@ -24,6 +24,14 @@ Interactive geospatial dashboard for ingesting drillhole data, visualizing sampl
 
 The stack is split into a FastAPI backend and a React frontend.
 
+## Screenshot
+
+<p align="center">
+  <img src="./UI_screenshot.png" alt="Smart Mining Panel UI" width="1000" />
+</p>
+
+<p align="center"><i>Interactive map view and controls from the React frontend.</i></p>
+
 ## Repository Structure
 
 ```
