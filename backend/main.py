@@ -2,7 +2,6 @@ from fastapi import FastAPI, Depends, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from typing import List, Optional
-from pydantic import BaseModel, ConfigDict
 import io
 import pandas as pd
 from pathlib import Path
@@ -10,6 +9,7 @@ import re
 
 from .db import get_db
 from . import models
+from .schemas import ForageOut, PredictRequest, PredictResponse
 
 app = FastAPI(title="Smart Mining Panel API")
 
@@ -24,27 +24,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-
-class ForageOut(BaseModel):
-    id: int
-    x_coord: float
-    y_coord: float
-    z_coord: float
-    teneur: float
-
-    model_config = ConfigDict(from_attributes=True)
-
-
-class PredictRequest(BaseModel):
-    x_coord: float
-    y_coord: float
-    z_coord: float
-
-
-class PredictResponse(BaseModel):
-    predicted_teneur: float
-    model: Optional[str] = None
+ 
 
 
 # Create tables on startup (development convenience; replace with Alembic in prod)
