@@ -1,3 +1,67 @@
+# Smart Mining Panel — Frontend
+
+A React-based geospatial UI for visualizing drillhole samples on a Leaflet map and interacting with the FastAPI backend for data ingestion and grade prediction.
+
+## Overview
+
+- Map-centric UI built with React and Leaflet
+- Calls backend endpoints for ingesting CSVs, listing data, and predicting ore grade
+- Uses environment variable `REACT_APP_API_URL` to target the API
+
+## Requirements
+
+- Node.js 18+
+
+## Setup
+
+```bash
+cd frontend
+npm install
+npm start
+```
+
+The dev server will be available at http://localhost:3000
+
+## Environment Variables
+
+- `REACT_APP_API_URL` — Base URL of the backend API (default: `http://localhost:8000`)
+  - Example: create a `.env` file in `frontend/`:
+    ```env
+    REACT_APP_API_URL=http://localhost:8000
+    ```
+
+## Available Scripts
+
+- `npm start` — Start development server with hot reload
+- `npm run build` — Create optimized production build in `build/`
+- `npm test` — Run test runner (if tests are added)
+
+## Project Structure
+
+```
+frontend/
+├─ public/
+│  ├─ index.html          # HTML template (favicon + manifest links)
+│  ├─ favicon.ico         # App favicon
+│  ├─ logo192.png         # PWA icon (192x192)
+│  └─ logo512.png         # PWA icon (512x512)
+└─ src/
+   ├─ MapView.jsx         # Main map UI and interactions
+   ├─ MapView.css         # Styles for the map and controls
+   ├─ api.js              # Client for FastAPI endpoints
+   ├─ App.js              # App shell mounting MapView
+   ├─ App.css             # Global/app styles
+   ├─ index.js            # React entry point
+   └─ index.css           # Global CSS
+```
+
+## Notes
+
+- CORS for localhost development is enabled in `backend/main.py`
+- To change the page title or favicon, edit `public/index.html` and icons in `public/`
+
+---
+
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
