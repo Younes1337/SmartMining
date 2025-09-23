@@ -8,7 +8,6 @@ Interactive geospatial dashboard for ingesting drillhole data, visualizing sampl
 [![React](https://img.shields.io/badge/frontend-React-61DAFB?logo=react&logoColor=222222)](https://react.dev/)
 [![Postgres](https://img.shields.io/badge/DB-PostgreSQL-336791?logo=postgresql&logoColor=white)](https://www.postgresql.org/)
 [![scikit-learn](https://img.shields.io/badge/ML-scikit--learn-F7931E?logo=scikit-learn&logoColor=white)](https://scikit-learn.org/)
-[![FastAPI](https://img.shields.io/badge/backend-FastAPI-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 
 </div>
