@@ -38,6 +38,50 @@ For the full project documentation, visit the GitBook:
 
 The stack is split into a FastAPI backend and a React frontend.
 
+## Production Deployment (EC2)
+
+The app is deployed on an Amazon EC2 instance behind Nginx with HTTPS (Let’s Encrypt).
+
+- Live UI: https://smartmining-16-16-120-47.sslip.io/
+- Same-origin API path: `/api` (Nginx proxies to FastAPI on 127.0.0.1:8000)
+- Backend service (systemd): `/etc/systemd/system/smartmining-backend.service`
+- Nginx site config: `/etc/nginx/sites-available/smartmining` (symlinked in `sites-enabled/`)
+- SSL certificate: managed by Certbot (auto-renew)
+
+### Health checks
+
+- UI: open the live URL above
+- API model status: `GET https://smartmining-16-16-120-47.sslip.io/api/model/info`
+- API data: `GET https://smartmining-16-16-120-47.sslip.io/api/data`
+
+Because the frontend calls the backend via the same origin (`/api`), extra CORS settings are not required in production.
+
+### Redeploying updates
+
+Frontend (rebuild static assets and reload Nginx):
+
+```bash
+cd /home/ubuntu/SmartMining/frontend
+export REACT_APP_API_URL=/api
+npm install
+npm run build
+sudo nginx -t && sudo systemctl reload nginx
+```
+
+Backend (restart FastAPI service after code changes):
+
+```bash
+cd /home/ubuntu/SmartMining
+sudo systemctl restart smartmining-backend
+sudo systemctl status --no-pager smartmining-backend
+```
+
+Environment variables for the backend are stored in the repository root `.env` (e.g., `DATABASE_URL=...`). The systemd unit loads it via `EnvironmentFile=/home/ubuntu/SmartMining/.env`.
+
+### SSL/TLS
+
+Certificates are provisioned by Certbot for the domain `smartmining-16-16-120-47.sslip.io` and will auto-renew. If you later move to a custom domain, update `server_name` in the Nginx site config and run `certbot --nginx -d yourdomain -d www.yourdomain`.
+
 ## Application Architecture
 
 <p align="center">
