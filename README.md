@@ -38,6 +38,12 @@ For the full project documentation, visit the GitBook:
 
 The stack is split into a FastAPI backend and a React frontend.
 
+## Application Architecture
+
+<p align="center">
+  <img src="./Application Architecture.png" alt="Application Architecture" width="1000" />
+</p>
+
 ## Screenshot
 
 <p align="center">
