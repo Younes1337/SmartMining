@@ -8,21 +8,16 @@ Interactive geospatial dashboard for ingesting drillhole data, visualizing sampl
 [![React](https://img.shields.io/badge/frontend-React-61DAFB?logo=react&logoColor=222222)](https://react.dev/)
 [![Postgres](https://img.shields.io/badge/DB-PostgreSQL-336791?logo=postgresql&logoColor=white)](https://www.postgresql.org/)
 [![scikit-learn](https://img.shields.io/badge/ML-scikit--learn-F7931E?logo=scikit-learn&logoColor=white)](https://scikit-learn.org/)
+[![FastAPI](https://img.shields.io/badge/backend-FastAPI-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 
 </div>
 
 <p align="center">
-  <a href="https://fastapi.tiangolo.com/"><img alt="FastAPI" height="42" src="https://raw.githubusercontent.com/devicons/devicon/master/icons/fastapi/fastapi-original.svg"></a>
   <a href="https://react.dev/"><img alt="React" height="42" src="https://raw.githubusercontent.com/devicons/devicon/master/icons/react/react-original.svg"></a>
   <a href="https://www.postgresql.org/"><img alt="PostgreSQL" height="42" src="https://raw.githubusercontent.com/devicons/devicon/master/icons/postgresql/postgresql-original.svg"></a>
   <a href="https://scikit-learn.org/"><img alt="scikit-learn" height="42" src="https://raw.githubusercontent.com/devicons/devicon/master/icons/scikitlearn/scikitlearn-original.svg"></a>
-  <a href="https://www.python.org/"><img alt="Python" height="42" src="https://raw.githubusercontent.com/devicons/devicon/master/icons/python/python-original.svg"></a>
-  <a href="https://nodejs.org/"><img alt="Node.js" height="42" src="https://raw.githubusercontent.com/devicons/devicon/master/icons/nodejs/nodejs-original.svg"></a>
-  <a href="https://leafletjs.com/"><img alt="Leaflet" height="42" src="https://raw.githubusercontent.com/datasets/awesome-data/main/images/leaflet-logo.svg"></a>
-  <a href="https://www.uvicorn.org/"><img alt="Uvicorn" height="42" src="https://raw.githubusercontent.com/encode/uvicorn/master/docs/uvicorn.png"></a>
-  <a href="https://www.sqlalchemy.org/"><img alt="SQLAlchemy" height="42" src="https://www.sqlalchemy.org/img/sqla_logo.png"></a>
-  <a href="https://docs.pydantic.dev/"><img alt="Pydantic" height="42" src="https://raw.githubusercontent.com/devicons/devicon/master/icons/pydantic/pydantic-original.svg"></a>
+  <a href="https://fastapi.tiangolo.com/"><img alt="FastAPI" height="42" src="https://raw.githubusercontent.com/devicons/devicon/master/icons/fastapi/fastapi-original.svg"></a>
 </p>
 
 ## Documentation
