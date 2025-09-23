@@ -17,7 +17,7 @@ Interactive geospatial dashboard for ingesting drillhole data, visualizing sampl
   <a href="https://www.postgresql.org/"><img alt="PostgreSQL" height="42" src="https://raw.githubusercontent.com/devicons/devicon/master/icons/postgresql/postgresql-original.svg"></a>
   <a href="https://scikit-learn.org/"><img alt="scikit-learn" height="42" src="https://raw.githubusercontent.com/devicons/devicon/master/icons/scikitlearn/scikitlearn-original.svg"></a>
   <a href="https://fastapi.tiangolo.com/"><img alt="FastAPI" height="42" src="https://raw.githubusercontent.com/devicons/devicon/master/icons/fastapi/fastapi-original.svg"></a>
-  <a href="https://aws.amazon.com/ec2/"><img alt="AWS EC2" height="42" src="https://raw.githubusercontent.com/devicons/devicon/master/icons/amazonwebservices/amazonwebservices-original.svg"></a>
+  <a href="https://aws.amazon.com/ec2/"><img alt="AWS EC2" height="42" src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/amazonwebservices/amazonwebservices-original.svg"></a>
 </p>
 
 ## Documentation
