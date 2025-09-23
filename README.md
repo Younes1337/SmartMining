@@ -12,6 +12,12 @@ Interactive geospatial dashboard for ingesting drillhole data, visualizing sampl
 
 </div>
 
+## Documentation
+
+For the full project documentation, visit the GitBook:
+
+- https://youness-organization-4.gitbook.io/smartmining-panel/
+
 ---
 
 ## Overview
