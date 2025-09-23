@@ -227,13 +227,6 @@ If artifacts are missing or incompatible, `POST /predict` returns `503`, and `GE
 - Frontend API client: See `frontend/src/api.js`
 - Map UI: See `frontend/src/MapView.jsx` and styles in `frontend/src/MapView.css`
 
-## Roadmap Ideas
-
-- Docker Compose for one-command dev (API + DB + UI)
-- Alembic migrations and seed scripts
-- Authentication and role-based access
-- File upload UI with progress and validation
-- Model management: versioning and model registry integration
 
 ## Contributing
 
