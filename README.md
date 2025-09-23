@@ -149,6 +149,32 @@ On startup, the backend will:
   - Body: `{ x_coord: number, y_coord: number, z_coord: number }`
   - Runs the pipeline (Poly → Scale → PCA → KNN) and returns `{ predicted_teneur, model }`.
 
+### API examples (curl)
+
+Base URL (dev): `http://127.0.0.1:8000`
+
+```bash
+# GET /data — list recent forages (up to 1000)
+curl -s http://127.0.0.1:8000/data | jq .
+
+# GET /model/info — check model artifacts status
+curl -s http://127.0.0.1:8000/model/info | jq .
+
+# POST /predict — predict teneur from X,Y,Z
+curl -s -X POST "http://127.0.0.1:8000/predict" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "x_coord": -6.55,
+    "y_coord": 33.42,
+    "z_coord": 150.0
+  }' | jq .
+
+# POST /ingest — upload a CSV file
+# CSV headers should include: x_coord,y_coord,z_coord,teneur (id optional)
+curl -s -X POST "http://127.0.0.1:8000/ingest" \
+  -F "file=@/absolute/path/to/your.csv" | jq .
+```
+
 ## Frontend (React)
 
 - Location: `frontend/`
