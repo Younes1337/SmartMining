@@ -13,6 +13,7 @@ export default function MapView() {
   const [form, setForm] = useState({ x_coord: '', y_coord: '', z_coord: '' });
   const [uploading, setUploading] = useState(false);
   const [file, setFile] = useState(null);
+  const [success, setSuccess] = useState('');
 
   useEffect(() => {
     if (!mapRef.current || mapInstance.current) return;
@@ -27,6 +28,16 @@ export default function MapView() {
 
     // LayerGroup for forage markers so we can refresh without duplicates
     markersLayer.current = L.layerGroup().addTo(mapInstance.current);
+
+    // Allow clicking on the map to autofill X/Y coordinates
+    mapInstance.current.on('click', (e) => {
+      const { lat, lng } = e.latlng;
+      setForm((s) => ({
+        ...s,
+        x_coord: String(lng),
+        y_coord: String(lat),
+      }));
+    });
 
     // Load existing forages and add markers
     (async () => {
@@ -64,15 +75,20 @@ export default function MapView() {
 
   const onFileChange = (e) => {
     setError('');
+    setSuccess('');
     setFile(e.target.files && e.target.files[0] ? e.target.files[0] : null);
   };
 
   const onUpload = async () => {
     if (!file) return;
     setError('');
+    setSuccess('');
     setUploading(true);
     try {
-      await ingestFile(file);
+      const res = await ingestFile(file);
+      if (res && typeof res.rows_inserted === 'number') {
+        setSuccess(`${res.rows_inserted} points ingested successfully`);
+      }
       await loadMarkers();
     } catch (e) {
       setError(String(e));
@@ -156,6 +172,7 @@ export default function MapView() {
             {pred.model && <div className="result-model">Model: {pred.model}</div>}
           </div>
         )}
+        {success && <div className="card" style={{ background: '#e6ffed', border: '1px solid #b7eb8f', color: '#135200' }}>{success}</div>}
         {error && <div className="error card">{error}</div>}
         <div className="hint">Use the form to add a predicted point. Existing forages are displayed on the map.</div>
       </div>
