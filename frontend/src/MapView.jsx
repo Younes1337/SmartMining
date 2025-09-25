@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import './MapView.css';
 import { fetchData, predict, ingestFile } from './api';
+import { utmToLatLng, latLngToUtm } from './utils/coordinateUtils';
 import logo from './logo.svg';
 
 export default function MapView() {
@@ -18,8 +19,10 @@ export default function MapView() {
   useEffect(() => {
     if (!mapRef.current || mapInstance.current) return;
     const L = window.L;
-    // Initialize map, set a default view (center can be adjusted to your data)
-    mapInstance.current = L.map(mapRef.current).setView([34.0, -6.8], 6);
+    // Initialize map with a default view for Northwest Canada
+    // Convert UTM coordinates to lat/lng for the initial view
+    const [initialLng, initialLat] = utmToLatLng(426000, 5839000);
+    mapInstance.current = L.map(mapRef.current).setView([initialLat, initialLng], 10);
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '&copy; OpenStreetMap contributors',
@@ -32,10 +35,12 @@ export default function MapView() {
     // Allow clicking on the map to autofill X/Y coordinates
     mapInstance.current.on('click', (e) => {
       const { lat, lng } = e.latlng;
+      // Convert the clicked lat/lng back to UTM for the form
+      const { easting, northing } = latLngToUtm(lat, lng);
       setForm((s) => ({
         ...s,
-        x_coord: String(lng),
-        y_coord: String(lat),
+        x_coord: String(easting),
+        y_coord: String(northing),
       }));
     });
 
@@ -55,15 +60,26 @@ export default function MapView() {
     if (markersLayer.current) {
       markersLayer.current.clearLayers();
     }
+    
     data.forEach((row) => {
-      const lat = row.y_coord;
-      const lng = row.x_coord;
-      if (Number.isFinite(lat) && Number.isFinite(lng)) {
-        L.marker([lat, lng])
-          .bindPopup(
-            `<b>Forage #${row.id}</b><br/>X: ${row.x_coord}<br/>Y: ${row.y_coord}<br/>Z: ${row.z_coord}<br/>Teneur: ${row.teneur}`
-          )
-          .addTo(markersLayer.current);
+      const easting = parseFloat(row.x_coord);
+      const northing = parseFloat(row.y_coord);
+      
+      if (Number.isFinite(easting) && Number.isFinite(northing)) {
+        // Convert UTM to lat/lng for display on the map
+        const [lng, lat] = utmToLatLng(easting, northing);
+        
+        if (lat !== null && lng !== null) {
+          L.marker([lat, lng])
+            .bindPopup(
+              `<b>Forage #${row.id}</b><br/>
+               X (Easting): ${easting.toFixed(2)}<br/>
+               Y (Northing): ${northing.toFixed(2)}<br/>
+               Z: ${row.z_coord}<br/>
+               Teneur: ${row.teneur}`
+            )
+            .addTo(markersLayer.current);
+        }
       }
     });
   };
@@ -114,13 +130,20 @@ export default function MapView() {
       setPred(res);
       if (mapInstance.current) {
         const L = window.L;
-        const lat = y;
-        const lng = x;
-        const marker = L.marker([lat, lng]).addTo(mapInstance.current);
-        marker.bindPopup(
-          `<b>Predicted</b><br/>X: ${x}<br/>Y: ${y}<br/>Z: ${z}<br/><b>Teneur:</b> ${Number(res.predicted_teneur).toFixed(4)}`
-        ).openPopup();
-        mapInstance.current.setView([lat, lng], 10);
+        // Convert UTM to lat/lng for display on the map
+        const [lng, lat] = utmToLatLng(x, y);
+        
+        if (lat !== null && lng !== null) {
+          const marker = L.marker([lat, lng]).addTo(mapInstance.current);
+          marker.bindPopup(
+            `<b>Predicted</b><br/>
+             X (Easting): ${x.toFixed(2)}<br/>
+             Y (Northing): ${y.toFixed(2)}<br/>
+             Z: ${z}<br/>
+             <b>Teneur:</b> ${Number(res.predicted_teneur).toFixed(4)}`
+          ).openPopup();
+          mapInstance.current.setView([lat, lng], 10);
+        }
       }
     } catch (e) {
       setError(String(e));
@@ -144,11 +167,11 @@ export default function MapView() {
         <form onSubmit={onSubmit} className="form card">
           <label>
             <span className="label">X</span>
-            <input name="x_coord" value={form.x_coord} onChange={onChange} placeholder="e.g., 426218.951" />
+            <input name="x_coord" value={form.x_coord} onChange={onChange} placeholder="e.g., 426218.951 (Easting)" />
           </label>
           <label>
             <span className="label">Y</span>
-            <input name="y_coord" value={form.y_coord} onChange={onChange} placeholder="e.g., 5839036.034" />
+            <input name="y_coord" value={form.y_coord} onChange={onChange} placeholder="e.g., 5839036.034 (Northing)" />
           </label>
           <label>
             <span className="label">Z</span>
