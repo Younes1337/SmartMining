@@ -199,7 +199,16 @@ On startup, the backend will:
   - Response returns rows received/inserted/dropped and the source filename.
 
 - `GET /data`
-  - Returns recent rows (up to 1000) as `ForageOut` schema.
+  - Returns the 1000 most recent rows, ordered by ID in descending order (newest first)
+  - Implementation (Python):
+    ```python
+    @app.get("/data", response_model=List[ForageOut])
+    def get_data(db: Session = Depends(get_db)):
+        # Get the 1000 most recent records by ID in descending order
+        items = db.query(models.Forage).order_by(models.Forage.id.desc()).limit(1000).all()
+        return items
+    ```
+  - Returns: JSON array of up to 1000 samples with coordinates and grade, ordered from newest to oldest by ID
 
 - `GET /model/info`
   - Reports whether each model artifact exists/loaded or any load errors.

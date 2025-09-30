@@ -245,7 +245,8 @@ def model_info():
 
 @app.get("/data", response_model=List[ForageOut])
 def get_data(db: Session = Depends(get_db)):
-    items = db.query(models.Forage).limit(1000).all()
+    # Get the 1000 most recent records by ID in descending order
+    items = db.query(models.Forage).order_by(models.Forage.id.desc()).limit(1000).all()
     return items
 
 
