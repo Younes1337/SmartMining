@@ -19,7 +19,7 @@ app = FastAPI(title="Smart Mining Panel API")
 # Suppress sklearn version mismatch warnings shown when unpickling estimators
 #warnings.filterwarnings("ignore", category=InconsistentVersionWarning)
 
-# Enable CORS for local development (React default ports)
+# Enable CORS for all origins in development
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
@@ -30,7 +30,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
- 
 
 
 # Create tables on startup (development convenience; replace with Alembic in prod)
@@ -179,13 +178,37 @@ async def ingest_csv(
 
     # Prepare SQLAlchemy objects
     to_insert = []
+    
+    # Get all existing IDs from the database once
+    existing_ids = {int(id_[0]) for id_ in db.query(models.Forage.id).all()}
+    max_id = max(existing_ids) if existing_ids else 0
+    next_id = max_id + 1
+    
+    # Track IDs we've seen in this batch to handle duplicates within the same file
+    seen_ids_in_batch = set()
+    duplicate_count = 0
+    
     for _, row in df.iterrows():
         id_val = None
         if has_id and pd.notna(row.get("id")):
             try:
                 id_val = int(row["id"])
-            except Exception:
-                id_val = None
+                # If this ID is already in use, assign a new one
+                if id_val in seen_ids_in_batch or id_val in existing_ids:
+                    id_val = next_id
+                    next_id += 1
+                    duplicate_count += 1
+                seen_ids_in_batch.add(id_val)
+                existing_ids.add(id_val)  # Add to existing to prevent reuse in this batch
+                
+            except (ValueError, TypeError) as e:
+                # If ID is not a valid integer, generate a new one
+                id_val = next_id
+                next_id += 1
+        else:
+            id_val = next_id
+            next_id += 1
+        # Create record with the assigned ID
         to_insert.append(
             models.Forage(
                 id=id_val,
@@ -196,11 +219,10 @@ async def ingest_csv(
             )
         )
 
+    # Insert all records in a single transaction
     try:
-        if to_insert:
-            db.add_all(to_insert)
-            db.commit()
-        inserted = len(to_insert)
+        db.add_all(to_insert)
+        db.commit()
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Database insert failed: {e}")
@@ -208,14 +230,16 @@ async def ingest_csv(
     return {
         "filename": (chosen_path.name if chosen_path is not None else getattr(file, "filename", None)),
         "rows_received": int(before_rows),
-        "rows_inserted": int(inserted),
+        "rows_inserted": int(len(to_insert)),
         "rows_dropped": int(dropped_rows),
+        "duplicate_ids_handled": int(duplicate_count),
+        "next_available_id": int(next_id)
     }
 
 
 @app.get("/model/info")
 def model_info():
-    """Report model artifacts presence, load status, and any load errors."""
+    """Return the status of model artifacts and their loading state."""
     return _MODEL_STATUS
 
 

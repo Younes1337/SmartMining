@@ -1,4 +1,6 @@
-const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+// Use relative URL in production, absolute in development
+const isProduction = process.env.NODE_ENV === 'production';
+const API_BASE = isProduction ? '/api' : 'http://localhost:8000';
 
 export async function fetchData() {
   const res = await fetch(`${API_BASE}/data`);

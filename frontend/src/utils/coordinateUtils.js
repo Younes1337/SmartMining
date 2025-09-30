@@ -2,8 +2,8 @@ import proj4 from 'proj4';
 
 // Define the UTM zone for your coordinates (Northwest Canada is typically UTM zone 9N to 11N)
 // You may need to adjust the zone based on your specific location
-const UTM_ZONE = '10N'; 
-const UTM_SRID = `EPSG:326${UTM_ZONE.match(/\d+/)[0]}`; // EPSG:326XX for northern hemisphere
+const UTM_ZONE = '11N'; 
+const UTM_SRID = `EPSG:326${UTM_ZONE.match(/\d+/)[0]}`;  // Now resolves to EPSG:32611
 
 // WGS84 projection (standard lat/lon)
 proj4.defs('EPSG:4326', '+proj=longlat +datum=WGS84 +no_defs');
