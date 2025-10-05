@@ -31,7 +31,10 @@ For the full project documentation, visit the GitBook:
 
 🎬 Demo
 
-[![Watch Demo](https://www.tella.tv/video/youness-video-fuei/image.jpg)](https://www.tella.tv/video/youness-video-fuei)
+## 🎬 Demo
+
+[Watch the demo](https://www.tella.tv/video/youness-video-fuei)
+
 
 
 ## Overview
